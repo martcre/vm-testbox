@@ -1,0 +1,40 @@
+- hosts: all
+  become: yes
+  gather_facts: false
+
+#  pre_tasks:
+#    - raw: test -e /usr/bin/python || (apk update && apk add python3)
+#    - setup:
+
+  tasks:
+   - name: Install docker packages
+     remote_user: vagrant
+     apt:
+       name: ['docker']
+       state: present
+       update_cache: yes
+   - name: Ensure group docker exists
+     ansible.builtin.group:
+       name: docker
+       state: present
+   - name: Ensure user vagrant has group docker
+     ansible.builtin.user:
+       name: vagrant
+       groups: docker
+       append: yes
+       state: present
+#   - name: Start docker service
+#     ansible.builtin.service:
+#       name: docker
+#       enabled: yes
+#       state: started
+   - name: Install docker-compose packages
+     remote_user: vagrant
+     apt:
+       name: ['docker-compose']
+       state: present
+       update_cache: yes
+   - name: Run NGINX
+     community.docker.docker_compose:
+       project_src: /vagrant/nginx
+     register: output
